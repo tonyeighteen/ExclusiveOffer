@@ -84,132 +84,128 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Replace this with a more secure authentication method in a real-world scenario
-            const validUsers = {
-                "staff1": "password1",
-                "staff2": "password2"
-            };
+        // Replace this with a more secure authentication method in a real-world scenario
+        const validUsers = {
+            "staff1": "password1",
+            "staff2": "password2"
+        };
 
-            function login() {
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
-                if (validUsers[username] === password) {
-                    document.getElementById('loginSection').style.display = 'none';
-                    document.getElementById('barcodeSection').style.display = 'block';
-                    document.getElementById('scannerSection').style.display = 'block';
-                } else {
-                    alert('Invalid login credentials.');
-                }
+            if (validUsers[username] === password) {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('barcodeSection').style.display = 'block';
+            } else {
+                alert('Invalid login credentials.');
             }
+        }
 
-            const deployedScriptURL = "https://script.google.com/macros/s/AKfycbwYridWKkqVSAPzW0HlrYQ_1chDEv31xi5d6GSfJA1NT_jGhtH2Hrg1GyoDRqFOBPej/exec"; // Replace with your deployed Apps Script URL
+        const deployedScriptURL = "https://script.google.com/macros/s/AKfycbwYridWKkqVSAPzW0HlrYQ_1chDEv31xi5d6GSfJA1NT_jGhtH2Hrg1GyoDRqFOBPej/exec"; // Replace with your deployed Apps Script URL
 
-            function checkBarcode() {
-                const barcode = document.getElementById('barcodeInput').value;
-                fetch(`${deployedScriptURL}?barcode=${barcode}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        const resultDiv = document.getElementById('result');
-                        if (data.error) {
-                            resultDiv.innerHTML = 'Error: ' + data.error;
+        function checkBarcode() {
+            const barcode = document.getElementById('barcodeInput').value;
+            fetch(`${deployedScriptURL}?barcode=${barcode}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultDiv = document.getElementById('result');
+                    if (data.error) {
+                        resultDiv.innerHTML = 'Error: ' + data.error;
+                        hideActivationElements();
+                    } else {
+                        if (data.used === "Yes") {
+                            resultDiv.innerHTML = `This code has been used at showroom ${data.showroom}.<br>Value: ${data.moneyValue}`;
                             hideActivationElements();
                         } else {
-                            if (data.used === "Yes") {
-                                resultDiv.innerHTML = `This code has been used at showroom ${data.showroom}.<br>Value: ${data.moneyValue}`;
-                                hideActivationElements();
-                            } else {
-                                resultDiv.innerHTML = `This code is available.<br>Value: ${data.moneyValue}`;
-                                showActivationElements();
-                            }
+                            resultDiv.innerHTML = `This code is available.<br>Value: ${data.moneyValue}`;
+                            showActivationElements();
                         }
-                    })
-                    .catch(error => console.error('Error fetching data:', error));
-            }
-
-            function activateBarcode() {
-                const barcode = document.getElementById('barcodeInput').value;
-                const showroom = document.getElementById('showroom').value;
-
-                fetch(deployedScriptURL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `barcode=${barcode}&showroom=${showroom}`
+                    }
                 })
-                .then(response => response.text())
-                .then(message => {
-                    const resultDiv = document.getElementById('result');
-                    resultDiv.innerHTML = message;
-                    hideActivationElements();
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        function activateBarcode() {
+            const barcode = document.getElementById('barcodeInput').value;
+            const showroom = document.getElementById('showroom').value;
+            
+            fetch(deployedScriptURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `barcode=${barcode}&showroom=${showroom}`
+            })
+            .then(response => response.text())
+            .then(message => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = message;
+                hideActivationElements();
+            })
+            .catch(error => console.error('Error posting data:', error));
+        }
+
+        function showActivationElements() {
+            document.getElementById('showroomSelect').style.display = 'block';
+            document.getElementById('activateButton').style.display = 'block';
+        }
+
+        function hideActivationElements() {
+            document.getElementById('showroomSelect').style.display = 'none';
+            document.getElementById('activateButton').style.display = 'none';
+        }
+
+        // HTML5 Barcode Scanner Functions
+        let html5QrCode;
+
+        function startScanner() {
+            // Show scanner section and hide barcode section
+            document.getElementById('scannerSection').style.display = 'block';
+            document.getElementById('barcodeSection').style.display = 'none';
+            document.getElementById('reader').style.display = 'block';
+
+            html5QrCode = new Html5Qrcode("reader");
+
+            // Adjust settings for better barcode scanning
+            const config = {
+                fps: 10, // Set FPS to lower value to enhance barcode detection
+                qrbox: { width: 300, height: 300 }, // Increase the scanning box size
+                formatsToSupport: [
+                    Html5QrcodeSupportedFormats.CODE_128, 
+                    Html5QrcodeSupportedFormats.EAN_13, 
+                    Html5QrcodeSupportedFormats.EAN_8,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.UPC_E
+                ] 
+            };
+
+            // Start scanning
+            html5QrCode.start(
+                { facingMode: "environment" }, // Use back camera
+                config,
+                qrCodeMessage => {
+                    document.getElementById('barcodeInput').value = qrCodeMessage;
+                    stopScanner();
+                    checkBarcode();
+                },
+                errorMessage => {
+                    // Ignore errors for now
                 })
-                .catch(error => console.error('Error posting data:', error));
-            }
+                .catch(err => {
+                    console.error("Unable to start scanning", err);
+                });
+        }
 
-            function showActivationElements() {
-                document.getElementById('showroomSelect').style.display = 'block';
-                document.getElementById('activateButton').style.display = 'block';
-            }
-
-            function hideActivationElements() {
-                document.getElementById('showroomSelect').style.display = 'none';
-                document.getElementById('activateButton').style.display = 'none';
-            }
-
-            // HTML5 Barcode and QR Code Scanner Functions
-            function startScanner() {
-                const html5QrCode = new Html5Qrcode("reader");
-
-                const config = {
-                    fps: 10, // Frame per second for scanning
-                    qrbox: { width: 300, height: 300 }, // Scanning box size
-                    formatsToSupport: [ 
-                        Html5QrcodeSupportedFormats.QR_CODE, // QR code
-                        Html5QrcodeSupportedFormats.CODE_128, // Barcodes
-                        Html5QrcodeSupportedFormats.EAN_13, 
-                        Html5QrcodeSupportedFormats.EAN_8,
-                        Html5QrcodeSupportedFormats.UPC_A,
-                        Html5QrcodeSupportedFormats.UPC_E 
-                    ]
-                };
-
-                html5QrCode.start(
-                    { facingMode: "environment" }, // Use back camera
-                    config,
-                    qrCodeMessage => {
-                        document.getElementById('barcodeInput').value = qrCodeMessage;
-                        html5QrCode.stop().then(() => {
-                            document.getElementById('reader').style.display = 'none';
-                            checkBarcode();
-                        }).catch(err => console.error("Stop failed", err));
-                    },
-                    errorMessage => {
-                        console.log("Scanner error: ", errorMessage);
-                        // Display a message or handle errors here
-                    })
-                    .catch(err => {
-                        console.error("Unable to start scanning", err);
-                        alert("Unable to access the camera. Please ensure the camera permission is granted.");
-                    });
-
-                document.getElementById('reader').style.display = 'block'; // Show scanner
-            }
-
-            function stopScanner() {
-                const html5QrCode = new Html5QrCode("reader");
+        function stopScanner() {
+            if (html5QrCode) {
                 html5QrCode.stop().then(() => {
                     document.getElementById('reader').style.display = 'none';
+                    document.getElementById('scannerSection').style.display = 'none';
+                    document.getElementById('barcodeSection').style.display = 'block';
                 }).catch(err => console.error("Stop failed", err));
             }
-
-            window.login = login;
-            window.checkBarcode = checkBarcode;
-            window.activateBarcode = activateBarcode;
-            window.startScanner = startScanner;
-            window.stopScanner = stopScanner;
-        });
+        }
     </script>
 </body>
 </html>
