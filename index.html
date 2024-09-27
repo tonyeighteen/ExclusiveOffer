@@ -39,8 +39,9 @@
             background-color: #fff;
         }
         #reader {
-            width: 500px;
-            margin: auto;
+            width: 100%;
+            max-width: 500px;
+            margin: 20px auto;
             display: none;
         }
     </style>
@@ -160,15 +161,17 @@
         function startScanner() {
             const html5QrCode = new Html5Qrcode("reader");
 
+            document.getElementById('reader').style.display = 'block'; // Show the camera view
+
             // Adjust settings for better barcode scanning
             const config = {
                 fps: 10, // Set FPS to lower value to enhance barcode detection
-                qrbox: { width: 300, height: 300 }, // Increase the scanning box size
+                qrbox: { width: 300, height: 300 }, // Scanning box size
                 formatsToSupport: [ Html5QrcodeSupportedFormats.CODE_128, 
                                     Html5QrcodeSupportedFormats.EAN_13, 
                                     Html5QrcodeSupportedFormats.EAN_8,
                                     Html5QrcodeSupportedFormats.UPC_A,
-                                    Html5QrcodeSupportedFormats.UPC_E ] // Specify barcode formats to support
+                                    Html5QrcodeSupportedFormats.UPC_E ] // Barcode formats to support
             };
 
             // Start scanning
