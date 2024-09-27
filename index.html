@@ -102,7 +102,7 @@
             }
         }
 
-        const deployedScriptURL = "https://script.google.com/macros/s/AKfycbwYridWKkqVSAPzW0HlrYQ_1chDEv31xi5d6GSfJA1NT_jGhtH2Hrg1GyoDRqFOBPej/exec"; // Replace with your deployed Apps Script URL
+        const deployedScriptURL = "https://script.google.com/macros/s/AKfycbw72ULEwjmlCNtMs5lYy3APCGnaDRmOpIt4lpJqCrgR7BQkOpGA93FsWo_OBE8w8_4n/exec"; // Replace with your deployed Apps Script URL
 
         function checkBarcode() {
             const barcode = document.getElementById('barcodeInput').value;
@@ -115,7 +115,7 @@
                         hideActivationElements();
                     } else {
                         if (data.used === "Yes") {
-                            resultDiv.innerHTML = `This code has been used at showroom ${data.showroom}.<br>Value: ${data.moneyValue}`;
+                            resultDiv.innerHTML = `This code has been used at showroom ${data.showroom}.<br>Value: ${data.moneyValue}.<br>Voucher ID: ${data.voucherID}`;
                             hideActivationElements();
                         } else {
                             resultDiv.innerHTML = `This code is available.<br>Value: ${data.moneyValue}`;
