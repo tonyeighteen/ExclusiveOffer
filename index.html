@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .login-section {
+            display: block;
+        }
+        .scanner-section, .barcode-section {
+            display: none;
+        }
+        #barcodeInput {
+            width: 300px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #showroomSelect {
+            display: none;
+            margin-top: 20px;
+        }
+        #activateButton {
+            display: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+        #reader {
+            width: 500px;
+            margin: auto;
+            display: none;
+        }
+    </style>
+    <!-- Add the html5-qrcode library -->
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+</head>
+<body>
+    <div class="login-section" id="loginSection">
+        <h2>Staff Login</h2>
+        <label for="username">Username:</label>
+        <input type="text" id="username" placeholder="Enter username"><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" placeholder="Enter password"><br><br>
+        <button onclick="login()">Login</button>
+    </div>
+
+    <div class="scanner-section" id="scannerSection">
+        <h2>Barcode Scanner</h2>
+        <div id="reader"></div>
+        <button onclick="stopScanner()">Stop Scanner</button><br><br>
+    </div>
+
+    <div class="barcode-section" id="barcodeSection">
+        <h2>Barcode Checker</h2>
+        <input type="text" id="barcodeInput" placeholder="Enter or scan barcode">
+        <button onclick="checkBarcode()">Check</button>
+        <button onclick="startScanner()">Scan with Camera</button>
+
+        <div id="showroomSelect">
+            <label for="showroom">Select Showroom:</label>
+            <select id="showroom">
+                <option value="Showroom 1">Showroom 1</option>
+                <option value="Showroom 2">Showroom 2</option>
+                <option value="Showroom 3">Showroom 3</option>
+            </select>
+        </div>
+        <button id="activateButton" onclick="activateBarcode()">Activate</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Replace this with a more secure authentication method in a real-world scenario
+        const validUsers = {
+            "staff1": "password1",
+            "staff2": "password2"
+        };
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (validUsers[username] === password) {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('barcodeSection').style.display = 'block';
+                document.getElementById('scannerSection').style.display = 'block';
+            } else {
+                alert('Invalid login credentials.');
+            }
+        }
+
+        const deployedScriptURL = "https://script.google.com/macros/s/AKfycbwYridWKkqVSAPzW0HlrYQ_1chDEv31xi5d6GSfJA1NT_jGhtH2Hrg1GyoDRqFOBPej/exec"; // Replace with your deployed Apps Script URL
+
+        function checkBarcode() {
+            const barcode = document.getElementById('barcodeInput').value;
+            fetch(`${deployedScriptURL}?barcode=${barcode}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultDiv = document.getElementById('result');
+                    if (data.error) {
+                        resultDiv.innerHTML = 'Error: ' + data.error;
+                        hideActivationElements();
+                    } else {
+                        if (data.used === "Yes") {
+                            resultDiv.innerHTML = `This code has been used at showroom ${data.showroom}.<br>Value: ${data.moneyValue}`;
+                            hideActivationElements();
+                        } else {
+                            resultDiv.innerHTML = `This code is available.<br>Value: ${data.moneyValue}`;
+                            showActivationElements();
+                        }
+                    }
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        function activateBarcode() {
+            const barcode = document.getElementById('barcodeInput').value;
+            const showroom = document.getElementById('showroom').value;
+            
+            fetch(deployedScriptURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `barcode=${barcode}&showroom=${showroom}`
+            })
+            .then(response => response.text())
+            .then(message => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = message;
+                hideActivationElements();
+            })
+            .catch(error => console.error('Error posting data:', error));
+        }
+
+        function showActivationElements() {
+            document.getElementById('showroomSelect').style.display = 'block';
+            document.getElementById('activateButton').style.display = 'block';
+        }
+
+        function hideActivationElements() {
+            document.getElementById('showroomSelect').style.display = 'none';
+            document.getElementById('activateButton').style.display = 'none';
+        }
+
+        // HTML5 Barcode Scanner Functions
+        function startScanner() {
+            const html5QrCode = new Html5Qrcode("reader");
+
+            // Adjust settings for better barcode scanning
+            const config = {
+                fps: 10, // Set FPS to lower value to enhance barcode detection
+                qrbox: { width: 300, height: 300 }, // Increase the scanning box size
+                formatsToSupport: [ Html5QrcodeSupportedFormats.CODE_128, 
+                                    Html5QrcodeSupportedFormats.EAN_13, 
+                                    Html5QrcodeSupportedFormats.EAN_8,
+                                    Html5QrcodeSupportedFormats.UPC_A,
+                                    Html5QrcodeSupportedFormats.UPC_E ] // Specify barcode formats to support
+            };
+
+            // Start scanning
+            html5QrCode.start(
+                { facingMode: "environment" }, // Use back camera
+                config,
+                qrCodeMessage => {
+                    document.getElementById('barcodeInput').value = qrCodeMessage;
+                    html5QrCode.stop().then(() => {
+                        document.getElementById('reader').style.display = 'none';
+                        checkBarcode();
+                    }).catch(err => console.error("Stop failed", err));
+                },
+                errorMessage => {
+                    // Ignore errors for now
+                })
+                .catch(err => {
+                    console.error("Unable to start scanning", err);
+                });
+        }
+
+        function stopScanner() {
+            const html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.stop().then(() => {
+                document.getElementById('reader').style.display = 'none';
+            }).catch(err => console.error("Stop failed", err));
+        }
+    </script>
+</body>
+</html>
