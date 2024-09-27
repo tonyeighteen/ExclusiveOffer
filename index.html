@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barcode Checker</title>
+    <title>Barcode and QR Code Checker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -41,7 +41,7 @@
         #reader {
             width: 100%;
             max-width: 500px;
-            margin: 20px auto;
+            margin: auto;
             display: none;
         }
     </style>
@@ -59,13 +59,13 @@
     </div>
 
     <div class="scanner-section" id="scannerSection">
-        <h2>Barcode Scanner</h2>
+        <h2>Barcode and QR Code Scanner</h2>
         <div id="reader"></div>
         <button onclick="stopScanner()">Stop Scanner</button><br><br>
     </div>
 
     <div class="barcode-section" id="barcodeSection">
-        <h2>Barcode Checker</h2>
+        <h2>Barcode and QR Code Checker</h2>
         <input type="text" id="barcodeInput" placeholder="Enter or scan barcode">
         <button onclick="checkBarcode()">Check</button>
         <button onclick="startScanner()">Scan with Camera</button>
@@ -157,24 +157,23 @@
             document.getElementById('activateButton').style.display = 'none';
         }
 
-        // HTML5 Barcode Scanner Functions
+        // HTML5 Barcode and QR Code Scanner Functions
         function startScanner() {
             const html5QrCode = new Html5Qrcode("reader");
 
-            document.getElementById('reader').style.display = 'block'; // Show the camera view
-
-            // Adjust settings for better barcode scanning
             const config = {
-                fps: 10, // Set FPS to lower value to enhance barcode detection
+                fps: 10, // Frame per second for scanning
                 qrbox: { width: 300, height: 300 }, // Scanning box size
-                formatsToSupport: [ Html5QrcodeSupportedFormats.CODE_128, 
-                                    Html5QrcodeSupportedFormats.EAN_13, 
-                                    Html5QrcodeSupportedFormats.EAN_8,
-                                    Html5QrcodeSupportedFormats.UPC_A,
-                                    Html5QrcodeSupportedFormats.UPC_E ] // Barcode formats to support
+                formatsToSupport: [ 
+                    Html5QrcodeSupportedFormats.QR_CODE, // QR code
+                    Html5QrcodeSupportedFormats.CODE_128, // Barcodes
+                    Html5QrcodeSupportedFormats.EAN_13, 
+                    Html5QrcodeSupportedFormats.EAN_8,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.UPC_E 
+                ]
             };
 
-            // Start scanning
             html5QrCode.start(
                 { facingMode: "environment" }, // Use back camera
                 config,
@@ -191,6 +190,8 @@
                 .catch(err => {
                     console.error("Unable to start scanning", err);
                 });
+
+            document.getElementById('reader').style.display = 'block'; // Show scanner
         }
 
         function stopScanner() {
