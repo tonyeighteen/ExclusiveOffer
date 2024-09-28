@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barcode and QR Code Checker</title>
+    <title>Chương trình ưu đãi Exclusive Offer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -50,35 +50,35 @@
 </head>
 <body>
     <div class="login-section" id="loginSection">
-        <h2>Staff Login</h2>
-        <label for="username">Username:</label>
-        <input type="text" id="username" placeholder="Enter username"><br><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" placeholder="Enter password"><br><br>
-        <button onclick="login()">Login</button>
+        <h2>Exclusive Offer</h2>
+        <label for="username">Tài khoản:</label>
+        <input type="text" id="username" placeholder="Nhập tên tài khoản"><br><br>
+        <label for="password">Mật khẩu:</label>
+        <input type="password" id="password" placeholder="Nhập mật khẩu"><br><br>
+        <button onclick="login()">Đăng nhập</button>
     </div>
 
     <div class="scanner-section" id="scannerSection">
-        <h2>Barcode and QR Code Scanner</h2>
+        <h2>Quét mã thẻ ưu đãi điện tử</h2>
         <div id="reader"></div>
-        <button onclick="stopScanner()">Stop Scanner</button><br><br>
+        <button onclick="stopScanner()">Dừng quét</button><br><br>
     </div>
 
     <div class="barcode-section" id="barcodeSection">
-        <h2>Barcode and QR Code Checker</h2>
-        <input type="text" id="barcodeInput" placeholder="Enter or scan barcode">
-        <button onclick="checkBarcode()">Check</button>
-        <button onclick="startScanner()">Scan with Camera</button>
+        <h2>Quét mã và Kích hoạt thẻ ưu đãi điện tử</h2>
+        <input type="text" id="barcodeInput" placeholder="Nhập số thẻ hoặc quét mã QR">
+        <button onclick="checkBarcode()">Kiểm tra</button>
+        <button onclick="startScanner()">Quét mã</button>
 
         <div id="showroomSelect">
-            <label for="showroom">Select Showroom:</label>
+            <label for="showroom">Chọn Showroom:</label>
             <select id="showroom">
-                <option value="Showroom 1">Showroom 1</option>
-                <option value="Showroom 2">Showroom 2</option>
-                <option value="Showroom 3">Showroom 3</option>
+                <option value="BMW Sala">BMW Sala</option>
+                <option value="BMW Nguyen Van Troi">BMW Nguyễn Văn Trỗi</option>
+                <option value="BMW Phu My Hung">BMW Phú Mỹ Hưng</option>
             </select>
         </div>
-        <button id="activateButton" onclick="activateBarcode()">Activate</button>
+        <button id="activateButton" onclick="activateBarcode()">Kích hoạt</button>
 
         <div id="result"></div>
     </div>
@@ -98,11 +98,11 @@
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('barcodeSection').style.display = 'block';
             } else {
-                alert('Invalid login credentials.');
+                alert('Thông tin đăng nhập không đúng.');
             }
         }
 
-        const deployedScriptURL = "https://script.google.com/macros/s/AKfycbw72ULEwjmlCNtMs5lYy3APCGnaDRmOpIt4lpJqCrgR7BQkOpGA93FsWo_OBE8w8_4n/exec"; // Replace with your deployed Apps Script URL
+        const deployedScriptURL = "https://script.google.com/macros/s/AKfycbyxSs2Slh3OG32hiTByAje0tg3h6g_sRotfO83bH-Tyfc52CImlfxPH6dMf-Ct9QhKOFA/exec"; // Replace with your deployed Apps Script URL
 
         function checkBarcode() {
             const barcode = document.getElementById('barcodeInput').value;
@@ -115,10 +115,10 @@
                         hideActivationElements();
                     } else {
                         if (data.used === "Yes") {
-                            resultDiv.innerHTML = `This code has been used at showroom ${data.showroom}.<br>Value: ${data.moneyValue}.<br>Voucher ID: ${data.voucherID}`;
+                            resultDiv.innerHTML = `Thẻ đã được sử dụng tại showroom ${data.showroom}.<br>Giá trị ưu đãi: ${data.moneyValue} VND.<br>Mã ưu đãi: ${data.voucherID}.`;
                             hideActivationElements();
                         } else {
-                            resultDiv.innerHTML = `This code is available.<br>Value: ${data.moneyValue}`;
+                            resultDiv.innerHTML = `Thẻ chưa được kích hoạt.<br>Giá trị ưu đãi: ${data.moneyValue} VND.`;
                             showActivationElements();
                         }
                     }
